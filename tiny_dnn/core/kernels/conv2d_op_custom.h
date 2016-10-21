@@ -44,6 +44,8 @@
 */
 #pragma once
 
+#include <iostream>
+
 namespace tiny_dnn {
 namespace kernels {
 
@@ -58,10 +60,13 @@ conv2d_op_custom(const tensor_t&         in_data,
         const vec_t& in = in_data[sample];
         vec_t& a = out_data[sample];
 
+	// o : No of output channels ; inc : number of dimensions (1 or 3)
         for (cnn_size_t o = 0; o < params.out.depth_; o++) {
             for (cnn_size_t inc = 0; inc < params.in.depth_; inc++) {
                 if (!params.tbl.is_connected(o, inc)) continue;
 
+		//std::cout << "o:" << o << " inc:" << inc << std::endl; 
+	  
                 cnn_size_t idx = 0;
                 idx = params.in.depth_ * o + inc;
                 idx = params.weight.get_index(0, 0, idx);
@@ -71,24 +76,41 @@ conv2d_op_custom(const tensor_t&         in_data,
                 const float_t *pi = &in[idx];
 
                 idx = params.out.get_index(0, 0, o);
-                float_t *pa = &a[idx];
-
+                float_t *pa = &a[idx];		
+		
+		cnn_size_t i_temp = 0; 
+		int offset = (int)params.stride_offset;
+		//std::cout << "offset:" << offset << std::endl; 
+		
+		// Loop over the dimensions of the output window.
                 for (cnn_size_t y = 0; y < params.out.height_; y++) {
                     for (cnn_size_t x = 0; x < params.out.width_; x++) {
+		      
+			//std::cout << "x:" << x << " y:" << y << std::endl; 
+		      
                         const float_t * ppw = pw;
                         const float_t * ppi = pi + params.in_padded.width_ *
                             (y * params.h_stride) +
                             x * params.w_stride;
                         float_t sum = float_t(0);
 
-                        // should be optimized for small kernel(3x3,5x5)
-                        for (cnn_size_t wy = 0; wy < params.weight.height_; wy++) {    // NOLINT
-                            for (cnn_size_t wx = 0; wx < params.weight.width_; wx++) { // NOLINT
-                                idx = wy * params.in_padded.width_ + wx;
-                                sum += *ppw++ * ppi[idx];
-                            }
-                        }
-                        pa[y * params.out.width_ + x] += sum;
+			// Only do this for some of the windows. 
+			if (i_temp%offset==0){			
+			  // should be optimized for small kernel(3x3,5x5)
+			  for (cnn_size_t wy = 0; wy < params.weight.height_; wy++) {    // NOLINT
+			      for (cnn_size_t wx = 0; wx < params.weight.width_; wx++) { // NOLINT
+				  idx = wy * params.in_padded.width_ + wx;
+				  sum += *ppw++ * ppi[idx];
+			      }
+			  }
+			  pa[y * params.out.width_ + x] += sum;
+			  //std::cout << " Calculated for x:" << x << " y:" << y << std::endl; 
+			}
+			else {
+			  pa[y * params.out.width_ + x] = 0.0f;
+			  //std::cout << " Skipped for x:" << x << " y:" << y << std::endl; 			  
+			}
+			i_temp++;
                     }
                 }
             }

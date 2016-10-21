@@ -334,6 +334,20 @@ class tiny_backend : public backend {
         kernels::tiny_maxpool_kernel(in, a,
             max_idx, *out2in_, layer_->parallelize());
     }
+    
+    // Overloaded version of maxpool for anytime. 
+    void maxpool(const std::vector<tensor_t*>& in_data,
+                 std::vector<tensor_t*>&       out_data,
+		 cnn_size_t stride_adjust
+		) override {
+        const tensor_t& in  = *in_data[0];
+        tensor_t&       a   = *out_data[1];
+        std::vector<std::vector<cnn_size_t>>& max_idx =
+            (*max_pooling_layer_worker_storage_).out2inmax_;
+	    
+        kernels::tiny_maxpool_kernel(in, a,
+            max_idx, *out2in_, layer_->parallelize(), stride_adjust);
+    }
 
     void maxpool(const std::vector<tensor_t*>& in_data,
                  const std::vector<tensor_t*>& out_data,

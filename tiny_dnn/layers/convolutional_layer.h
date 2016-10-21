@@ -79,10 +79,12 @@ class convolutional_layer : public feedforward_layer<Activation> {
                         cnn_size_t     w_stride = 1,
                         cnn_size_t     h_stride = 1,
                         backend_t      backend_type = backend_t::tiny_dnn,
-                        backend_params b_params = backend_params())
+                        backend_params b_params = backend_params(),
+			cnn_size_t     stride_offset = 1
+			)
         : convolutional_layer(in_width, in_height, window_size, window_size, in_channels, out_channels,
                               connection_table(), pad_type, has_bias, w_stride, h_stride,
-                              backend_type, b_params)
+                              backend_type, b_params, stride_offset)
     {}
 
     /**
@@ -112,10 +114,12 @@ class convolutional_layer : public feedforward_layer<Activation> {
                         cnn_size_t     w_stride = 1,
                         cnn_size_t     h_stride = 1,
                         backend_t      backend_type = backend_t::tiny_dnn,
-                        backend_params b_params = backend_params())
+                        backend_params b_params = backend_params(),
+			cnn_size_t     stride_offset = 1
+		       )
         : convolutional_layer(in_width, in_height, window_width, window_height, in_channels, out_channels,
             connection_table(), pad_type, has_bias, w_stride, h_stride,
-            backend_type, b_params)
+            backend_type, b_params,stride_offset)
     {}
 
     /**
@@ -145,10 +149,12 @@ class convolutional_layer : public feedforward_layer<Activation> {
                         cnn_size_t              w_stride = 1,
                         cnn_size_t              h_stride = 1,
                         backend_t      backend_type = backend_t::tiny_dnn,
-                        backend_params b_params = backend_params())
+                        backend_params b_params = backend_params(),
+			cnn_size_t     stride_offset = 1			
+ 		      )
         : convolutional_layer(in_width, in_height, window_size, window_size, in_channels, out_channels,
             connection_table, pad_type, has_bias, w_stride, h_stride,
-            backend_type, b_params)
+            backend_type, b_params, stride_offset)
     {}
 
     /**
@@ -180,13 +186,15 @@ class convolutional_layer : public feedforward_layer<Activation> {
                         cnn_size_t              w_stride = 1,
                         cnn_size_t              h_stride = 1,
                         backend_t      backend_type = backend_t::tiny_dnn,
-                        backend_params b_params = backend_params())
+                        backend_params b_params = backend_params(),
+			cnn_size_t     stride_offset = 1
+		       )
         : Base(std_input_order(has_bias)) {
             conv_set_params(shape3d(in_width, in_height, in_channels),
                             window_width, window_height,
                             out_channels, pad_type, has_bias,
                             w_stride, h_stride,
-                            connection_table);
+                            connection_table, stride_offset);
             init_backend(backend_type);
             Base::set_backend_type(backend_type);
     }
@@ -418,7 +426,9 @@ private:
                          bool           has_bias,
                          cnn_size_t     w_stride,
                          cnn_size_t     h_stride,
-                         const connection_table& tbl = connection_table()) {
+                         const connection_table& tbl = connection_table(),
+			 cnn_size_t 	stride_offset = 0
+			) {
         params_.in = in;
         params_.in_padded = shape3d(in_length(in.width_, w_width, ptype),
                                     in_length(in.height_, w_height, ptype),
@@ -433,6 +443,7 @@ private:
         params_.w_stride = w_stride;
         params_.h_stride = h_stride;
         params_.tbl      = tbl;
+	params_.stride_offset = stride_offset;
 
         // init padding buffer
         if (params_.pad_type == padding::same) {
@@ -513,6 +524,11 @@ private:
             throw nn_error("Not supported engine: " + to_string(backend_type));
         }
 
+    }
+    
+    void set_anytime_param(int anytime_param) {        
+	params_.stride_offset = anytime_param;
+	//std::cout << "Anytime param got set for convolutional_layer" << std::endl; 
     }
 
  private:

@@ -34,6 +34,7 @@ struct maxpool_params {
     index3d<cnn_size_t> out_;
     size_t              pool_size_;
     size_t              stride_;
+    size_t		stride_offset_;
 };
 
 struct max_pooling_layer_worker_specific_storage {

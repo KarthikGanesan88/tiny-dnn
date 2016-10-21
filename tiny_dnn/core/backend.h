@@ -107,6 +107,10 @@ class backend {
 
     virtual void maxpool(const std::vector<tensor_t*>& in_data,
                          std::vector<tensor_t*>&       out_data) = 0;
+			 
+    virtual void maxpool(const std::vector<tensor_t*>& in_data,
+                         std::vector<tensor_t*>&       out_data,
+			 cnn_size_t 		       stride_adjust) {};
 
     virtual void maxpool(const std::vector<tensor_t*>& in_data,
                          const std::vector<tensor_t*>& out_data,

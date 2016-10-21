@@ -34,26 +34,41 @@ inline void tiny_maxpool_kernel(const tensor_t& in_data,
                                 tensor_t&       out_data,
                                 std::vector<std::vector<cnn_size_t>>& max_idx,
                                 const std::vector<std::vector<cnn_size_t>>& out2in,
-                                const bool layer_parallelize) {
-
+                                const bool layer_parallelize,
+				cnn_size_t stride_adjust = 1
+ 			      ) {
+  
     for_i(layer_parallelize, in_data.size(), [&](int sample) {
         const vec_t& in = in_data[sample];
         vec_t& a = out_data[sample];
         std::vector<cnn_size_t>& max = max_idx[sample];
 
-        for (cnn_size_t i = 0; i < out2in.size(); i++) {
-            const auto& in_index = out2in[i];
-            float_t max_value = std::numeric_limits<float_t>::lowest();
+	//std::cout << "out2in:" << out2in.size() << std::endl; 
+	
+	cnn_size_t inc = stride_adjust; 
+		
+	for (cnn_size_t i = 0; i < out2in.size(); i++) {
+	  if (i%inc == 0){
+	    const auto& in_index = out2in[i];
+	    float_t max_value = std::numeric_limits<float_t>::lowest();
 
-            for (auto j : in_index) {
-                if (in[j] > max_value) {
-                    max_value = in[j];
-                    max[i] = j;
-                }
-            }
-            a[i] = max_value;
-        }
-    });
+	    // std::cout << in_index.size() << ","; 
+	    // in_index is always pooling_size^2 in size. 
+	    
+	    for (auto j : in_index) {
+		if (in[j] > max_value) {
+		    max_value = in[j];
+		    max[i] = j;
+		}
+	    }
+	    a[i] = max_value;
+	  }
+	  else{
+	    a[i] = 0.0f; 
+	  }        	  
+	}
+        //std::cout << std::endl; 
+    });    
 }
 
 inline void tiny_maxpool_back_kernel(tensor_t& prev_delta,

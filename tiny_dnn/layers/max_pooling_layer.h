@@ -63,7 +63,9 @@ class max_pooling_layer : public feedforward_layer<Activation> {
                       cnn_size_t     in_channels,
                       cnn_size_t     pooling_size,
                       backend_t      backend_type = backend_t::tiny_dnn,
-                      backend_params b_params = backend_params())
+                      backend_params b_params = backend_params(),
+		      cnn_size_t     stride_offset = 1
+		     )
             : max_pooling_layer(in_width, in_height, in_channels, pooling_size, pooling_size, backend_type, b_params) {
     }
 
@@ -88,14 +90,18 @@ class max_pooling_layer : public feedforward_layer<Activation> {
                       cnn_size_t     pooling_size,
                       cnn_size_t     stride,
                       backend_t      backend_type = backend_t::tiny_dnn,
-                      backend_params b_params = backend_params())
+                      backend_params b_params = backend_params(),
+		      cnn_size_t     stride_offset = 1
+		     )
             : Base({ vector_type::data }) {
+	      
+	// Need to add stride_offset to this list.       
         set_maxpool_params(
             shape3d(in_width, in_height, in_channels),
             shape3d(pool_out_dim(in_width, pooling_size, stride),
                     pool_out_dim(in_height, pooling_size, stride),
                     in_channels),
-            pooling_size, stride);
+            pooling_size, stride, stride_offset);
 
         init_connection();
         init_backend(backend_type);
@@ -124,8 +130,17 @@ class max_pooling_layer : public feedforward_layer<Activation> {
 
     void forward_propagation(const std::vector<tensor_t*>& in_data,
                              std::vector<tensor_t*>&       out_data) override {
-        // launch maxpool kernel
-        Base::backend_->maxpool(in_data, out_data);
+   
+	// launch maxpool kernel
+	// Have access to maxpool params here. so check that and call
+        // the alternative function. 
+	     
+	if (params_.stride_offset_!=1){	    
+	    Base::backend_->maxpool(in_data, out_data, params_.stride_offset_);
+	}
+	else {
+	    Base::backend_->maxpool(in_data, out_data);
+	}
 
         // activations
         this->forward_activation(*out_data[0], *out_data[1]);
@@ -174,6 +189,12 @@ class max_pooling_layer : public feedforward_layer<Activation> {
     void serialize(Archive & ar) {
         serialize_prolog(ar, this);
         ar(cereal::make_nvp("in_size", params_.in_), cereal::make_nvp("pool_size", params_.pool_size_), cereal::make_nvp("stride", params_.stride_));
+    }
+    
+    void set_anytime_param(int anytime_param) {        
+      // Cant just set the params like for FC and Conv.       
+      // Params_ never gets checked in the maxpool kernel!       
+      params_.stride_offset_ = anytime_param;	
     }
 
 private:
@@ -283,11 +304,14 @@ private:
     void set_maxpool_params(const shape3d& in,
                             const shape3d& out,
                             cnn_size_t pooling_size,
-                            cnn_size_t stride) {
-        params_.in_        = in;
-        params_.out_       = out;
-        params_.pool_size_ = pooling_size;
-        params_.stride_    = stride;
+                            cnn_size_t stride,
+			    cnn_size_t stride_offset
+ 			  ) {
+        params_.in_        	= in;
+        params_.out_       	= out;
+        params_.pool_size_ 	= pooling_size;
+        params_.stride_    	= stride;
+	params_.stride_offset_ 	= stride_offset;
     }
 };
 
