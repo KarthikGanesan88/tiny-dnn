@@ -65,9 +65,9 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     anytime_params.push_back(4);
     anytime_params.push_back(1);
 
-    nn.set_anytime_params(anytime_params);  
+    //nn.set_anytime_params(anytime_params);  
     
-    nn.test(test_images, test_labels).print_detail(std::cout);
+    //nn.test(test_images, test_labels).print_detail(std::cout);
     
     /*for (int i = 8; i>0; i/=2 ){
     

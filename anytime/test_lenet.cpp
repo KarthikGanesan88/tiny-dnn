@@ -77,9 +77,9 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     anytime_params.push_back(1); // [5] - F6 Layer
     anytime_params.push_back(1); // [6] - F7 Layer
 
-    //nn.test1(test_images, test_labels).print_summary(std::cout);
+    nn.test(test_images, test_labels).print_summary(std::cout);
     
-    for (int ia = 1; ia<=4; ia*=2 ){    		// [0] - C1 Layer
+    /*for (int ia = 1; ia<=4; ia*=2 ){    		// [0] - C1 Layer
         anytime_params[0] = ia;	
 	for (int ib = 1; ib<=4; ib*=2 ){  		// [1] - S2 Layer  
 	  anytime_params[1] = ib;	  
@@ -102,7 +102,7 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
 	    }	    
 	  }
 	}	
-    }
+    }*/
 }
 
 int main(int argc, char **argv) {

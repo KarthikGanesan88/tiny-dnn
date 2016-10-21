@@ -311,6 +311,14 @@ class layer : public node {
         return out_shape()[0].width_;
     }
 
+    virtual void set_anytime_param(int anytime_param) {
+        //std::cout << "ERROR: THIS WASNT OVERRIDEN! " <<  anytime_param << std::endl;
+    }
+    
+    virtual void set_output_activations(){
+		
+    }
+    
     /////////////////////////////////////////////////////////////////////////
     // setter
     template <typename WeightInit>
@@ -440,6 +448,8 @@ class layer : public node {
     }
 
     void forward() {
+	//static int network_run_count = 0;
+	//network_run_count++;
         std::vector<tensor_t*> in_data, out_data;
 
         // organize input/output vectors from storage
