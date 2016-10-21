@@ -215,6 +215,35 @@ class nodes {
         }
     }
 
+    // Function to set anytime params per layer
+    // iterate over layers and call the function in layer.h to set the param
+    void set_anytime_params(std::vector<int> anytime_params){
+
+        // Check to see if the size of the vector matches the number of layers in the network
+        if (nodes_.size() != anytime_params.size()){
+            throw nn_error("Mismatch in anytime parameters. Size does not match number of layers in network\n");
+        }
+
+        int i = 0;
+        for (auto& l : nodes_) {
+            l->set_anytime_param(anytime_params.at(i++));
+        }
+    }
+    
+    // size_t size() const { return nodes_.size(); }    
+    // layer* operator[] (size_t index) { return nodes_[index]; }
+    
+    // Once the NN is loaded, this function is called to set the output_activations_ param
+    // to output the activations of just the final (softmax) layer.     
+    void output_last_layer_activations(){
+	
+	//Check to see which is the last layer. 
+        size_t last_layer_number = nodes_.size();
+	
+	//set the param for just the last layer. 
+	nodes_[last_layer_number-1]->set_output_activations();
+    }
+
  protected:
     template <typename T>
     void push_back(T&& node) {

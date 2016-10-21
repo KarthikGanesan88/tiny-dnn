@@ -49,9 +49,12 @@ public:
     fully_connected_layer(cnn_size_t     in_dim,
                           cnn_size_t     out_dim,
                           bool           has_bias = true,
-                          backend_t      backend_type = backend_t::tiny_dnn)
+                          backend_t      backend_type = backend_t::tiny_dnn,
+                          cnn_size_t     skip_nodes = 1,
+			  bool 		 output_activations = false
+ 			)
             : Base(std_input_order(has_bias)) {
-        set_params(in_dim, out_dim, has_bias);
+        set_params(in_dim, out_dim, has_bias,skip_nodes,output_activations);
         init_backend(backend_type);
         Base::set_backend_type(backend_type);
     }
@@ -71,6 +74,14 @@ public:
 
     size_t fan_out_size() const override {
         return params_.out_size_;
+    }
+   
+    void set_anytime_param(int anytime_param) {        
+	params_.skip_nodes_ = anytime_param;
+    }
+    
+    void set_output_activations() {        
+	params_.output_activations_ = true;
     }
 
     std::vector<index3d<cnn_size_t>> in_shape() const override {
@@ -147,10 +158,15 @@ protected:
 
     void set_params(const cnn_size_t in_size,
                     const cnn_size_t out_size,
-                    bool             has_bias) {
-        params_.in_size_  = in_size;
-        params_.out_size_ = out_size;
-        params_.has_bias_ = has_bias;
+                    bool             has_bias,
+		    const cnn_size_t skip_nodes,
+		    bool 	     output_activations
+ 		  ) {
+        params_.in_size_  	    = in_size;
+        params_.out_size_  	    = out_size;
+        params_.has_bias_   	    = has_bias;
+	params_.skip_nodes_ 	    = skip_nodes;
+	params_.output_activations_ = output_activations;
     }
 
     void init_backend(backend_t backend_type) {

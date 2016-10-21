@@ -365,10 +365,30 @@ public:
             const label_t predicted = fprop_max_index(in[i]);
             const label_t actual = t[i];
 
+	    //std::cout << predicted << "," << actual << ",";
+	    
             if (predicted == actual) test_result.num_success++;
             test_result.num_total++;
             test_result.confusion_matrix[predicted][actual]++;
         }
+        return test_result;
+    }
+    
+     /**
+     * test a single example
+     **/
+    result test1(const std::vector<vec_t>& in, const std::vector<label_t>& t) {
+        result test_result;
+        set_netphase(net_phase::test);
+        
+        const label_t predicted = fprop_max_index(in[0]);
+        const label_t actual = t[0];
+
+	//std::cout << predicted << "," << actual << ",";
+	
+	if (predicted == actual) test_result.num_success++;
+	test_result.num_total++;
+	
         return test_result;
     }
 
@@ -680,6 +700,18 @@ public:
             net_.load_weights(ar);
         }
     }
+
+    // Function to be called from main to set anytime params.
+    // consists of a vector of ints corresponding to each layer.
+    void set_anytime_params(std::vector<int> anytime_params){
+        net_.set_anytime_params(anytime_params);
+    }
+    
+    // Function to output the activations of the last (softmax) layer
+    void output_last_layer_activations(){
+	net_.output_last_layer_activations();
+    }
+
 protected:
     float_t fprop_max(const vec_t& in, int idx = 0) {
         const vec_t& prediction = fprop(in, idx);

@@ -26,6 +26,7 @@
 */
 #pragma once
 
+#include <iostream>
 #include "tiny_dnn/core/params/fully_params.h"
 
 namespace tiny_dnn {
@@ -38,20 +39,30 @@ fully_connected_op_custom(const tensor_t&     in_data,
                           tensor_t&           out_data,
                           const fully_params& params,
                           const bool          layer_parallelize) {
+    
     for_i(layer_parallelize, in_data.size(), [&](int sample) {
         const vec_t& in = in_data[sample];
         vec_t& out = out_data[sample];
 
         for (cnn_size_t i = 0; i < params.out_size_; i++) {
             out[i] = float_t(0);
-            for (cnn_size_t c = 0; c < params.in_size_; c++) {
+            for (cnn_size_t c = 0; c < params.in_size_; c+=params.skip_nodes_) {
                 out[i] += W[c * params.out_size_ + i] * in[c];
             }
 
             if (params.has_bias_) {
                 out[i] += bias[i];
             }
+            
+            // If this is the last layer, also output these activations. 
+            if (params.output_activations_ == true){
+		std::cout << out[i] << ","; 
+	    }           
         }
+        
+        if (params.output_activations_ == true){
+	  std::cout << std::endl; 
+	}              
     });
 }
 
