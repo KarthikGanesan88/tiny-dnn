@@ -76,8 +76,10 @@ public:
         return params_.out_size_;
     }
    
-    void set_anytime_param(int anytime_param) {        
+    void set_anytime_param(int anytime_param) override {        
 	params_.skip_nodes_ = anytime_param;
+	//std::cout << "anytime param is being set for FC layer to: "<< params_.skip_nodes_<< std::endl;
+	//std::cout << "anytime param is being set for FC layer to: "<< anytime_param<< std::endl;
     }
     
     void set_output_activations() {        

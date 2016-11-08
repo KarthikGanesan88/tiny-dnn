@@ -67,7 +67,7 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
 
     //nn.set_anytime_params(anytime_params);  
     
-    //nn.test(test_images, test_labels).print_detail(std::cout);
+    nn.test1(test_images, test_labels).print_detail(std::cout);
     
     /*for (int i = 8; i>0; i/=2 ){
     
@@ -91,11 +91,11 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        std::cerr << "Usage : " << argv[0]
-                  << " path_to_data (example:../data)" << std::endl;
+    if (argc != 3) {
+        std::cerr << "Usage : " << argv[0] << " path_to_model path_to_data" << std::endl;
+        std::cerr << "Example: ./test_JP lenet_model.dnn ../data/" << std::endl;
         return -1;
     }
-    test_lenet("LeNet-JP-4layers-model", argv[1]);
+    test_lenet(argv[1],argv[2]);
     return 0;
 }

@@ -27,6 +27,8 @@
 #pragma once
 
 #include <iostream>
+#include <chrono>
+#include <thread>
 #include "tiny_dnn/core/params/fully_params.h"
 
 namespace tiny_dnn {
@@ -39,31 +41,58 @@ fully_connected_op_custom(const tensor_t&     in_data,
                           tensor_t&           out_data,
                           const fully_params& params,
                           const bool          layer_parallelize) {
+  
+    //std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  
+    // Create this temporarily just for testing. 
+    //cnn_size_t loop_count = (params.skip_nodes_==1)?params.in_size_:params.skip_nodes_;
+        
+    //std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+  
+    //int temp; 
+    
+    //std::chrono::high_resolution_clock::time_point t1, t2;
     
     for_i(layer_parallelize, in_data.size(), [&](int sample) {
-        const vec_t& in = in_data[sample];
-        vec_t& out = out_data[sample];
+      
+		//t1 = std::chrono::high_resolution_clock::now();
 
-        for (cnn_size_t i = 0; i < params.out_size_; i++) {
-            out[i] = float_t(0);
-            for (cnn_size_t c = 0; c < params.in_size_; c+=params.skip_nodes_) {
-                out[i] += W[c * params.out_size_ + i] * in[c];
-            }
+		const vec_t& in = in_data[sample];
+			vec_t& out = out_data[sample];
 
-            if (params.has_bias_) {
-                out[i] += bias[i];
-            }
-            
-            // If this is the last layer, also output these activations. 
-            if (params.output_activations_ == true){
-		std::cout << out[i] << ","; 
-	    }           
-        }
-        
-        if (params.output_activations_ == true){
-	  std::cout << std::endl; 
-	}              
+		//std::cout << "params.skip_nodes_ (inside op_custom): " << params.skip_nodes_ << std::endl;
+
+		//for (temp = 0; temp < 1; temp++){
+		  for (cnn_size_t i = 0; i < params.out_size_; i++) {
+			  out[i] = float_t(0);
+			  for (cnn_size_t c = 0; c < params.in_size_; c+=params.skip_nodes_) {
+			  //for (cnn_size_t c = 0; c < loop_count; c++) {
+			  out[i] += W[c * params.out_size_ + i] * in[c];
+			  //std::cout << c << ",";
+			  }
+			  //std::cout << std::endl;
+
+			  if (params.has_bias_) {
+			  out[i] += bias[i];
+			  }
+
+			  // If this is the last layer, also output these activations.
+			  if (params.output_activations_ == true){
+			  std::cout << out[i] << ",";
+			  }
+		  }
+
+		  if (params.output_activations_ == true){
+			std::cout << std::endl;
+	  }
+	//}
+	
+	//t2 = std::chrono::high_resolution_clock::now();
+	
     });
+    
+    //auto timeElapsed1 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
+    //std::cout << "Time in FC layer: " << timeElapsed1 << std::endl;           
 }
 
 inline void

@@ -312,7 +312,7 @@ class layer : public node {
     }
 
     virtual void set_anytime_param(int anytime_param) {
-        //std::cout << "ERROR: THIS WASNT OVERRIDEN! " <<  anytime_param << std::endl;
+        std::cout << "ERROR: THIS WASNT OVERRIDEN! " <<  anytime_param << std::endl;
     }
     
     virtual void set_output_activations(){

@@ -224,10 +224,15 @@ class nodes {
             throw nn_error("Mismatch in anytime parameters. Size does not match number of layers in network\n");
         }
 
+        //std::cout << "Anytime param (from nodes.h):"; 
+        
         int i = 0;
-        for (auto& l : nodes_) {
-            l->set_anytime_param(anytime_params.at(i++));
+        for (auto& l : nodes_) {            
+	    //std::cout << anytime_params[i]<< ","; 
+	    l->set_anytime_param(anytime_params[i]);
+	    i++;
         }
+        //std::cout << std::endl; 
     }
     
     // size_t size() const { return nodes_.size(); }    

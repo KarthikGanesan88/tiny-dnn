@@ -25,10 +25,25 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <iostream>
+#include <chrono>
 #include "tiny_dnn/tiny_dnn.h"
 
 using namespace tiny_dnn;
 using namespace tiny_dnn::activation;
+
+void run_test(network<sequential>& nn, std::vector<label_t>& test_labels, std::vector<vec_t>& test_images, const std::vector<int> ap) 
+{
+    //std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+    
+    nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
+    nn.test(test_images, test_labels).print_summary(std::cout);
+    
+    /*std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+    
+    auto timeElapsed = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
+    std::cout << "Time elapsed: " << timeElapsed << std::endl;    */
+}
+  
 
 static void test_lenet(const std::string& dictionary, const std::string& data_dir_path) {
 
@@ -55,10 +70,10 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     /* construct nets
     nn << convolutional_layer<tan_h>(32, 32, 5, 1, 6,  	// C1, 1@32x32-in, 6@28x28-out
             padding::valid, true, 1, 1, backend_type)    
-       << max_pooling_layer<tan_h>(28, 28, 6, 2)   	    // S2, 6@28x28-in, 6@14x14-out    
+       << max_pooling_layer<tan_h>(28, 28, 6, 2)   	// S2, 6@28x28-in, 6@14x14-out    
        << convolutional_layer<tan_h>(14, 14, 5, 6, 16, 	// C3, 6@14x14-in, 16@10x10-in
             padding::valid, true, 1, 1, backend_type)       
-       << max_pooling_layer<tan_h>(10, 10, 16, 2)  	    // S4, 16@10x10-in, 16@5x5-out       
+       << max_pooling_layer<tan_h>(10, 10, 16, 2)  	// S4, 16@10x10-in, 16@5x5-out       
        << convolutional_layer<tan_h>(5, 5, 5, 16, 120, 	// C5, 16@5x5-in, 120@1x1-out
             padding::valid, true, 1, 1, backend_type)       
        << fully_connected_layer<tan_h>(120, 84,        	// F6, 120-in, 84-out
@@ -68,18 +83,66 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     ;*/
 
     // Anytime params must be initialised to 1 to perform the 'full calculations'
-    std::vector<int> anytime_params;
-    anytime_params.push_back(1); // [0] - C1 Layer
-    anytime_params.push_back(2); // [1] - S2 Layer
-    anytime_params.push_back(1); // [2] - C3 Layer
-    anytime_params.push_back(1); // [3] - S4 Layer
-    anytime_params.push_back(1); // [4] - C5 Layer
-    anytime_params.push_back(1); // [5] - F6 Layer
-    anytime_params.push_back(1); // [6] - F7 Layer
-
-    nn.test(test_images, test_labels).print_summary(std::cout);
+    std::vector<int> ap;
+    ap.push_back(1); // [0] - C1 Layer
+    ap.push_back(1); // [1] - S2 Layer
+    ap.push_back(1); // [2] - C3 Layer
+    ap.push_back(1); // [3] - S4 Layer
+    ap.push_back(1); // [4] - C5 Layer
+    ap.push_back(1); // [5] - F6 Layer
+    ap.push_back(1); // [6] - F7 Layer
+        
+    std::cout << "-------------------------Full run-------------------------" << std::endl;
+    nn.test1(test_images, test_labels).print_summary(std::cout);
     
-    /*for (int ia = 1; ia<=4; ia*=2 ){    		// [0] - C1 Layer
+    std::cout << "-------------------------Partial run-------------------------" << std::endl;
+    ap[0]=8;ap[1]=8;ap[2]=8;ap[3]=8;ap[4]=8;ap[5]=8;ap[6]=1;    
+    nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
+    nn.test1(test_images, test_labels).print_summary(std::cout);
+    
+    /*ap[0]=8;ap[1]=8;ap[2]=8;ap[3]=8;ap[4]=8;ap[5]=8; run_test(nn,test_labels, test_images,ap);    
+    ap[0]=4;ap[1]=4;ap[2]=8;ap[3]=8;ap[4]=8;ap[5]=8; run_test(nn,test_labels, test_images,ap);        
+    ap[0]=4;ap[1]=4;ap[2]=4;ap[3]=4;ap[4]=8;ap[5]=8; run_test(nn,test_labels, test_images,ap);
+    ap[0]=4;ap[1]=4;ap[2]=4;ap[3]=4;ap[4]=4;ap[5]=8; run_test(nn,test_labels, test_images,ap);
+        
+    ap[0]=4;ap[1]=4;ap[2]=4;ap[3]=4;ap[4]=4;ap[5]=4; run_test(nn,test_labels, test_images,ap);    
+    ap[0]=2;ap[1]=2;ap[2]=4;ap[3]=4;ap[4]=4;ap[5]=4; run_test(nn,test_labels, test_images,ap);    
+    ap[0]=2;ap[1]=2;ap[2]=2;ap[3]=2;ap[4]=4;ap[5]=4; run_test(nn,test_labels, test_images,ap); 
+    ap[0]=2;ap[1]=2;ap[2]=2;ap[3]=2;ap[4]=2;ap[5]=4; run_test(nn,test_labels, test_images,ap);    
+    
+    ap[0]=2;ap[1]=2;ap[2]=2;ap[3]=2;ap[4]=2;ap[5]=2; run_test(nn,test_labels, test_images,ap);     
+    ap[0]=1;ap[1]=1;ap[2]=2;ap[3]=2;ap[4]=2;ap[5]=2; run_test(nn,test_labels, test_images,ap); 
+    ap[0]=1;ap[1]=1;ap[2]=1;ap[3]=1;ap[4]=2;ap[5]=2; run_test(nn,test_labels, test_images,ap); 
+    ap[0]=1;ap[1]=1;ap[2]=1;ap[3]=1;ap[4]=1;ap[5]=2; run_test(nn,test_labels, test_images,ap); 
+    ap[0]=1;ap[1]=1;ap[2]=1;ap[3]=1;ap[4]=1;ap[5]=1; run_test(nn,test_labels, test_images,ap); */
+}
+
+int main(int argc, char **argv) {
+    if (argc != 3) {
+        std::cerr << "Usage : " << argv[0] << " path_to_model path_to_data" << std::endl;
+        std::cerr << "Example: ./test_lenet lenet_model.dnn ../data/" << std::endl;
+        return -1;
+    }
+    test_lenet(argv[1],argv[2]);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*for (int ia = 1; ia<=4; ia*=2 ){    		// [0] - C1 Layer
         anytime_params[0] = ia;	
 	for (int ib = 1; ib<=4; ib*=2 ){  		// [1] - S2 Layer  
 	  anytime_params[1] = ib;	  
@@ -92,9 +155,9 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
 		  for (int ig = 1; ig<=4; ig*=2 ){    	// [2] - C3 Layer
 		    anytime_params[5] = ig;
 		    	    
-		    nn.set_anytime_params(anytime_params);  
+		    nn.set_anytime_params(ap);  
 				
-		    for (auto iter: anytime_params) { std::cout<< iter << ","; }
+		    for (auto iter: ap) { std::cout<< iter << ","; }
 		  
 		    nn.test(test_images, test_labels).print_summary(std::cout);
 		  }
@@ -103,13 +166,6 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
 	  }
 	}	
     }*/
-}
 
-int main(int argc, char **argv) {
-    if (argc != 2) {
-        std::cerr << "Usage : " << argv[0] << " path_to_data (example:../data)" << std::endl;
-        return -1;
-    }
-    test_lenet("LeNet-model-2FC", argv[1]);
-    return 0;
-}
+
+
