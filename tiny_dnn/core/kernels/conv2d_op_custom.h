@@ -47,6 +47,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include "tiny_dnn/custom_pragmas.h"
 
 namespace tiny_dnn {
 namespace kernels {
@@ -58,23 +59,28 @@ conv2d_op_custom(const tensor_t&         in_data,
                  tensor_t&              out_data,
                  const core::conv_params& params,
                  const bool          parallelize) {
-  
+
+#ifdef TIMING
     std::chrono::high_resolution_clock::time_point t1,t2;
-
     t1 = std::chrono::high_resolution_clock::now();
+#endif
 
+#ifdef PRINT_DEBUG
     std::cout<<"Starting Conv Layer\n";
+#endif
 
     //for_i(parallelize, in_data.size(), [&](int sample) {
     for (auto sample = 0; sample < in_data.size(); sample++) {
         const vec_t& in = in_data[sample];
         vec_t& a = out_data[sample];
 
-        std::cout<<"Input:";
+#ifdef PRINT_DEBUG
+        std::cout<<"Input:\n";
         for ( auto i = 0; i< in.size(); i++ ) {
             std::cout << in[i] << ",";
         }
         std::cout<<std::endl;
+#endif
 
         // o : No of output channels ; inc : number of dimensions (1 or 3)
         for (cnn_size_t o = 0; o < params.out.depth_; o++) {
@@ -130,17 +136,20 @@ conv2d_op_custom(const tensor_t&         in_data,
         }
     //});
 
-        std::cout<<"Output:";
+#ifdef PRINT_DEBUG
+        std::cout<<"Output:\n";
         for ( auto j = 0; j< a.size(); j++ ) {
             std::cout << a[j] << ",";
         }
         std::cout<<std::endl;
+#endif
     }
 
+#ifdef TIMING
     t2 = std::chrono::high_resolution_clock::now();
-
-    //auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
-    //std::cout << std::setw(30) << "Time in Conv Layer:" << timeElapsed << std::endl;
+    auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
+    std::cout << std::setw(30) << "Time in Conv Layer:" << timeElapsed << std::endl;
+#endif
 }
 
 

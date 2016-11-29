@@ -30,6 +30,7 @@
 #include <chrono>
 #include <thread>
 #include "tiny_dnn/core/params/fully_params.h"
+#include "tiny_dnn/custom_pragmas.h"
 
 namespace tiny_dnn {
 namespace kernels {
@@ -42,18 +43,21 @@ fully_connected_op_custom(const tensor_t&     in_data,
                           const fully_params& params,
                           const bool          layer_parallelize) {
 
+#ifdef TIMING
     std::chrono::high_resolution_clock::time_point t1,t2;
-
-    std::cout << "Starting FC layer: (in size =  "<<params.in_size_<<", out size= "<<params.out_size_<<") : \n";
-
-
     t1 = std::chrono::high_resolution_clock::now();
+#endif
+
+#ifdef PRINT_DEBUG
+    std::cout << "Starting FC layer: (in size =  "<<params.in_size_<<", out size= "<<params.out_size_<<") : \n";
+#endif
 
     //for_i(layer_parallelize, in_data.size(), [&](int sample) {
     for (auto sample = 0; sample < in_data.size(); sample++) {
         const vec_t &in = in_data[sample];
         vec_t &out = out_data[sample];
 
+#ifdef PRINT_DEBUG
         std::cout << "Inputs :\n";
         for (cnn_size_t c = 0; c < params.in_size_; c++) {
             std::cout << in[c] <<",";
@@ -61,6 +65,8 @@ fully_connected_op_custom(const tensor_t&     in_data,
         std::cout << std::endl;
 
         std::cout << "Outputs :\n";
+#endif
+
         for (cnn_size_t i = 0; i < params.out_size_; i++) {
             out[i] = float_t(0);
             if ((i%params.skip_nodes_) == 0) {
@@ -71,16 +77,21 @@ fully_connected_op_custom(const tensor_t&     in_data,
                     out[i] += bias[i];
                 }
             }
+#ifdef PRINT_DEBUG
             std::cout << out[i] << ",";
+#endif
         }
+#ifdef PRINT_DEBUG
         std::cout << std::endl;
+#endif
     }
     //});
 
+#ifdef TIMING
     t2 = std::chrono::high_resolution_clock::now();
-
-    //auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
-    //std::cout << std::setw(30) << "Time in FC layer : " << timeElapsed << std::endl;
+    auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
+    std::cout << std::setw(30) << "Time in FC layer : " << timeElapsed << std::endl;
+#endif
 }
 
 inline void

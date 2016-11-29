@@ -28,6 +28,7 @@
 
 #include <chrono>
 #include <thread>
+#include "tiny_dnn/custom_pragmas.h"
 
 namespace tiny_dnn {
 namespace core {
@@ -40,12 +41,12 @@ inline void tiny_maxpool_kernel(const tensor_t& in_data,
                                 const bool layer_parallelize,
 								cnn_size_t stride_adjust = 1
  			      				) {
-    
-    //std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  
+
+#ifdef TIMING
     std::chrono::high_resolution_clock::time_point t1,t2;
 
     t1 = std::chrono::high_resolution_clock::now();
+#endif
   
     //for_i(layer_parallelize, in_data.size(), [&](int sample) {
     for (auto sample = 0; sample < in_data.size(); sample++) {
@@ -54,7 +55,9 @@ inline void tiny_maxpool_kernel(const tensor_t& in_data,
 			vec_t& a = out_data[sample];
 			std::vector<cnn_size_t>& max = max_idx[sample];
 
+#ifdef PRINT_DEBUG
 		std::cout << "\n\nStarting Max Pool:\n Inputs:" << std::endl;
+#endif
 
 		cnn_size_t inc = stride_adjust;
 
@@ -68,11 +71,12 @@ inline void tiny_maxpool_kernel(const tensor_t& in_data,
             //std::cout << i << ",";
             // in_index is always pooling_size^2 in size.
 
+#ifdef PRINT_DEBUG
             for (auto j : in_index) {
                 std::cout << in[j] << ";";
             }
-
             std::cout << ",";
+#endif
 
             for (auto j : in_index) {
               if (in[j] > max_value) {
@@ -83,17 +87,19 @@ inline void tiny_maxpool_kernel(const tensor_t& in_data,
             a[i] = max_value;
 
         }
+#ifdef PRINT_DEBUG
         std::cout << std::endl;
-
+#endif
         //Add another loop here to loop over a[i]:0->out2in.size()
 
     //});
     }
 
+#ifdef TIMING
     t2 = std::chrono::high_resolution_clock::now();
-
-    //auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
-    //std::cout << std::setw(30) << "Time in Max pool Layer : " << timeElapsed << std::endl;
+    auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
+    std::cout << std::setw(30) << "Time in Max pool Layer : " << timeElapsed << std::endl;
+#endif
 }
 
 inline void tiny_maxpool_back_kernel(tensor_t& prev_delta,
