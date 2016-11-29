@@ -375,20 +375,21 @@ public:
     }
     
      /**
-     * test a single example
+     * test only the first n examples.
      **/
-    result test1(const std::vector<vec_t>& in, const std::vector<label_t>& t) {
+    result testN(const std::vector<vec_t>& in, const std::vector<label_t>& t, const int n) {
         result test_result;
         set_netphase(net_phase::test);
-        
-        const label_t predicted = fprop_max_index(in[0]);
-        const label_t actual = t[0];
 
-	//std::cout << predicted << "," << actual << ",";
-	
-	if (predicted == actual) test_result.num_success++;
-	test_result.num_total++;
-	
+         for (size_t i = 0; i < n; i++) {
+             const label_t predicted = fprop_max_index(in[i]);
+             const label_t actual = t[i];
+
+             if (predicted == actual) test_result.num_success++;
+             test_result.num_total++;
+             test_result.confusion_matrix[predicted][actual]++;
+         }
+
         return test_result;
     }
 
@@ -716,7 +717,12 @@ public:
     
     // Function to output the activations of the last (softmax) layer
     void output_last_layer_activations(){
-	net_.output_last_layer_activations();
+	    net_.output_last_layer_activations();
+    }
+
+    // This function outputs the details about the various layers in a provided network.
+    void output_model_details(){
+        net_.output_model_details();
     }
 
 protected:

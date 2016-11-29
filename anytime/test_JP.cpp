@@ -26,9 +26,26 @@
 */
 #include <iostream>
 #include "tiny_dnn/tiny_dnn.h"
+#include <chrono>
 
 using namespace tiny_dnn;
 using namespace tiny_dnn::activation;
+
+
+void run_test(network<sequential>& nn, std::vector<label_t>& test_labels, std::vector<vec_t>& test_images, const std::vector<int> ap)
+{
+    nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
+
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+
+    //nn.testN(test_images, test_labels,10).print_summary(std::cout);
+    nn.test(test_images, test_labels).print_summary(std::cout);
+
+    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+
+    auto timeElapsed = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
+    std::cout << "Time elapsed: " << timeElapsed << std::endl;
+}
 
 static void test_lenet(const std::string& dictionary, const std::string& data_dir_path) {
 
@@ -43,7 +60,9 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     std::ifstream ifs(dictionary.c_str());
     ifs >> nn;
 
-    // load MNIST dataset
+    nn.output_model_details();
+
+    //load MNIST dataset
     std::vector<label_t> test_labels;
     std::vector<vec_t> test_images;
 
@@ -51,43 +70,34 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     parse_mnist_images(data_dir_path+"/t10k-images.idx3-ubyte", &test_images, -1.0, 1.0, 2, 2);
 
     std::cout << "Start testing" << std::endl;
-    
-    //nn.output_last_layer_activations();
-    
-    //std::cout << "Predicted, Actual, Outputs" << std::endl;
-    
-    // Create a vector to pass in the params. 
-    nn.test(test_images, test_labels).print_detail(std::cout);
-    
-    std::vector<int> anytime_params;
-    anytime_params.push_back(1);
-    anytime_params.push_back(4);
-    anytime_params.push_back(4);
-    anytime_params.push_back(1);
 
-    //nn.set_anytime_params(anytime_params);  
-    
-    nn.test1(test_images, test_labels).print_detail(std::cout);
-    
-    /*for (int i = 8; i>0; i/=2 ){
-    
-        anytime_params[0] = i;
+    std::cout << "full model" << std::endl;
 
-        for (int j = 8; j>0; j/=2 ){
-        
-            anytime_params[1] = j;
+    nn.testN(test_images, test_labels, (cnn_size_t)1);
+    //nn.test(test_images, test_labels).print_summary(std::cout);
 
-            for (int k = 8; k>0; k/=2 ){
-        
-                anytime_params[2] = k;
-            
-                nn.set_anytime_params(anytime_params);  
-                              
-                std::cout<< i << " " << j << " " << k << ":";
-                nn.test(test_images, test_labels).print_summary(std::cout);                    
-            }            
-        }
-    }*/   
+    /*std::vector<int> ap;
+    ap.push_back(1); ap.push_back(1);
+
+    std::cout << "partial model" << std::endl;
+
+    ap[0]=1; ap[1]=1;
+    nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
+
+    nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
+    //nn.test(test_images, test_labels).print_summary(std::cout);
+
+    ap[0]=2; ap[1]=1;
+    nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
+
+    nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
+    //nn.test(test_images, test_labels).print_summary(std::cout);
+
+    ap[0]=4; ap[1]=1;
+    nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
+
+    nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
+    //nn.test(test_images, test_labels).print_summary(std::cout);*/
 }
 
 int main(int argc, char **argv) {
@@ -97,5 +107,35 @@ int main(int argc, char **argv) {
         return -1;
     }
     test_lenet(argv[1],argv[2]);
+
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+/*for (int i = 8; i>0; i/=2 ){
+
+    anytime_params[0] = i;
+
+    for (int j = 8; j>0; j/=2 ){
+
+        anytime_params[1] = j;
+
+        for (int k = 8; k>0; k/=2 ){
+
+            anytime_params[2] = k;
+
+            nn.set_anytime_params(anytime_params);
+
+            std::cout<< i << " " << j << " " << k << ":";
+            nn.test(test_images, test_labels).print_summary(std::cout);
+        }
+    }
+}*/

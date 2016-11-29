@@ -35,13 +35,9 @@ static void construct_net(network<sequential>& nn) {
     core::backend_t backend_type = core::backend_t::tiny_dnn;
    
     // construct nets
-    nn << fully_connected_layer<tan_h>(32*32, 128,   // C1, 32*32-in, 128-out
+    nn << fully_connected_layer<tan_h>(32*32, 32,    // C1, 32*32-in, 32-out
             true, backend_type)
-       << fully_connected_layer<tan_h>(128, 64,      // C2, 128-in, 64-out
-            true, backend_type)
-       << fully_connected_layer<tan_h>(64, 32,       // C2, 64-in, 32-out
-            true, backend_type)    
-       << fully_connected_layer<softmax>(32, 10,     // C3, 64-in, 10-out
+       << fully_connected_layer<softmax>(32, 10,     // C3, 32-in, 10-out
             true, backend_type)           
     ;
 }
@@ -105,7 +101,7 @@ static void train_lenet(const std::string& data_dir_path) {
     nn.test(test_images, test_labels).print_detail(std::cout);
 
     // save network model & trained weights
-    nn.save("LeNet-JP-4layers-model");
+    nn.save("LeNet-JP-2layers-32-10");
 }
 
 int main(int argc, char **argv) {

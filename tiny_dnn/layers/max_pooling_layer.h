@@ -132,11 +132,10 @@ class max_pooling_layer : public feedforward_layer<Activation> {
                              std::vector<tensor_t*>&       out_data) override {
    
 	// launch maxpool kernel
-	// Have access to maxpool params here. so check that and call
-        // the alternative function. 
+	// Have access to maxpool params here. so check that and call the alternative function.
 	     
-	if (params_.stride_offset_!=1){	    
-	    Base::backend_->maxpool(in_data, out_data, params_.stride_offset_);
+	if (this->anytime_param_!=1){
+	    Base::backend_->maxpool(in_data, out_data, this->anytime_param_);
 	}
 	else {
 	    Base::backend_->maxpool(in_data, out_data);
@@ -154,11 +153,9 @@ class max_pooling_layer : public feedforward_layer<Activation> {
         Base::backend_->maxpool(in_data, out_data, out_grad, in_grad);
     }
 
-    std::vector<index3d<cnn_size_t>>
-    in_shape() const override { return { params_.in_ }; }
+    std::vector<index3d<cnn_size_t>> in_shape() const override { return { params_.in_ }; }
 
-    std::vector<index3d<cnn_size_t>>
-    out_shape() const override { return { params_.out_, params_.out_ }; }
+    std::vector<index3d<cnn_size_t>> out_shape() const override { return { params_.out_, params_.out_ }; }
 
     std::string layer_type() const override {
         return std::string("max-pool");
@@ -190,11 +187,10 @@ class max_pooling_layer : public feedforward_layer<Activation> {
         serialize_prolog(ar, this);
         ar(cereal::make_nvp("in_size", params_.in_), cereal::make_nvp("pool_size", params_.pool_size_), cereal::make_nvp("stride", params_.stride_));
     }
-    
-    void set_anytime_param(int anytime_param) {        
-      // Cant just set the params like for FC and Conv.       
-      // Params_ never gets checked in the maxpool kernel!       
-      params_.stride_offset_ = anytime_param;	
+
+    void on_set_anytime_param() override {
+        params_.stride_offset_ = this->anytime_param_;
+        //std::cout << "anytime param is being set for MP layer to: "<< params_.stride_offset_<< std::endl;
     }
 
 private:
@@ -311,7 +307,7 @@ private:
         params_.out_       	= out;
         params_.pool_size_ 	= pooling_size;
         params_.stride_    	= stride;
-	params_.stride_offset_ 	= stride_offset;
+	    params_.stride_offset_ 	= stride_offset;
     }
 };
 

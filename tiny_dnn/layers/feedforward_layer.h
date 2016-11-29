@@ -25,6 +25,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
+#include <iostream>
+#include <chrono>
 #include "tiny_dnn/layers/layer.h"
 #include "tiny_dnn/activations/activation_function.h"
 
@@ -43,18 +45,48 @@ public:
 
 public:
     void forward_activation(tensor_t& a_tensor, tensor_t& out_tensor) {
+
+        std::chrono::high_resolution_clock::time_point t1, t2;
+
         cnn_size_t out_dim = out_shape()[0].size();
 
-        for_i(a_tensor.size(), [&](int sample) {
-            vec_t& out = a_tensor[sample];
-            vec_t& a   = out_tensor[sample];
+        //int nodes_calculated=0;
+        std::cout<<"\n\nActivation function"<<std::endl;
+
+        t1 = std::chrono::high_resolution_clock::now();
+
+        //for_i(a_tensor.size(), [&](int sample) {
+        for (auto sample = 0; sample < a_tensor.size(); sample++) {
+            vec_t &out = a_tensor[sample];
+            vec_t &a = out_tensor[sample];
+
             out.resize(out_dim);
             a.resize(out_dim);
 
+            std::cout<<"Input :\n";
             for (cnn_size_t i = 0; i < out_dim; i++) {
-                out[i] = this->h_.f(a, i);
+                std::cout<< a[i] <<",";
             }
-        });
+            /*std::cout<<std::endl<<"vec_t out (initial) :";
+
+            for (cnn_size_t i = 0; i < out_dim; i++) {
+                std::cout<< out[i] <<",";
+            }*/
+
+            std::cout<< "\nOutput :\n";
+
+            for (cnn_size_t i = 0; i < out_dim; i+=anytime_param_) {
+                out[i] = this->h_.f(a, i);
+                std::cout<<out[i]<<",";
+            }
+            std::cout<<std::endl;
+        }
+        //});
+
+        t2 = std::chrono::high_resolution_clock::now();
+
+        //auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
+        //std::cout << std::setw(30) << "Time in activation function : " << timeElapsed << std::endl;
     }
 
     void backward_activation(const tensor_t& prev_delta, const tensor_t& this_out, tensor_t& curr_delta) {
@@ -81,7 +113,19 @@ public:
         });
     }
 
+    virtual void on_set_anytime_param() {}
+
+    void set_anytime_param(int anytime_param) override{
+        anytime_param_ = anytime_param;
+        on_set_anytime_param();
+    }
+
+    int get_anytime_param() {
+        return anytime_param_;
+    }
+
     Activation h_;
+    int anytime_param_ = 1;
 };
 
 } // namespace tiny_dnn

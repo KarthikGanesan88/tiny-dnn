@@ -82,6 +82,9 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
             true, backend_type) 
     ;*/
 
+    // Initial run to warm the cache?
+    nn.testN(test_images, test_labels, (cnn_size_t)1);
+
     // Anytime params must be initialised to 1 to perform the 'full calculations'
     std::vector<int> ap;
     ap.push_back(1); // [0] - C1 Layer
@@ -93,14 +96,14 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     ap.push_back(1); // [6] - F7 Layer
         
     std::cout << "-------------------------Full run-------------------------" << std::endl;
-    nn.test1(test_images, test_labels).print_summary(std::cout);
+    nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
     
     std::cout << "-------------------------Partial run-------------------------" << std::endl;
-    ap[0]=8;ap[1]=8;ap[2]=8;ap[3]=8;ap[4]=8;ap[5]=8;ap[6]=1;    
+    ap[0]=4;ap[1]=4;ap[2]=4;ap[3]=4;ap[4]=4;ap[5]=4;ap[6]=1;
     nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
-    nn.test1(test_images, test_labels).print_summary(std::cout);
+    nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
     
-    /*ap[0]=8;ap[1]=8;ap[2]=8;ap[3]=8;ap[4]=8;ap[5]=8; run_test(nn,test_labels, test_images,ap);    
+    /*ap[0]=8;ap[1]=8;ap[2]=8;ap[3]=8;ap[4]=8;ap[5]=8; run_test(nn,test_labels, test_images,ap);
     ap[0]=4;ap[1]=4;ap[2]=8;ap[3]=8;ap[4]=8;ap[5]=8; run_test(nn,test_labels, test_images,ap);        
     ap[0]=4;ap[1]=4;ap[2]=4;ap[3]=4;ap[4]=8;ap[5]=8; run_test(nn,test_labels, test_images,ap);
     ap[0]=4;ap[1]=4;ap[2]=4;ap[3]=4;ap[4]=4;ap[5]=8; run_test(nn,test_labels, test_images,ap);
@@ -120,7 +123,7 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
 int main(int argc, char **argv) {
     if (argc != 3) {
         std::cerr << "Usage : " << argv[0] << " path_to_model path_to_data" << std::endl;
-        std::cerr << "Example: ./test_lenet lenet_model.dnn ../data/" << std::endl;
+        std::cerr << "Example: ./test_lenet lenet_model ../data/" << std::endl;
         return -1;
     }
     test_lenet(argv[1],argv[2]);

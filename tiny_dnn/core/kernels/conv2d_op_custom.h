@@ -59,24 +59,30 @@ conv2d_op_custom(const tensor_t&         in_data,
                  const core::conv_params& params,
                  const bool          parallelize) {
   
-    /*std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  
-    std::chrono::high_resolution_clock::time_point t1,t2;    
-  
-    std::cout << "start conv" << std::endl;*/
-    
-    for_i(parallelize, in_data.size(), [&](int sample) {
-	
+    std::chrono::high_resolution_clock::time_point t1,t2;
+
+    t1 = std::chrono::high_resolution_clock::now();
+
+    std::cout<<"Starting Conv Layer\n";
+
+    //for_i(parallelize, in_data.size(), [&](int sample) {
+    for (auto sample = 0; sample < in_data.size(); sample++) {
         const vec_t& in = in_data[sample];
         vec_t& a = out_data[sample];
 
-	    // o : No of output channels ; inc : number of dimensions (1 or 3)
+        std::cout<<"Input:";
+        for ( auto i = 0; i< in.size(); i++ ) {
+            std::cout << in[i] << ",";
+        }
+        std::cout<<std::endl;
+
+        // o : No of output channels ; inc : number of dimensions (1 or 3)
         for (cnn_size_t o = 0; o < params.out.depth_; o++) {
             for (cnn_size_t inc = 0; inc < params.in.depth_; inc++) {
                 if (!params.tbl.is_connected(o, inc)) continue;
 
-		//std::cout << "o:" << o << " inc:" << inc << std::endl; 
-	  
+                //std::cout << "o:" << o << " inc:" << inc << std::endl;
+
                 cnn_size_t idx = 0;
                 idx = params.in.depth_ * o + inc;
                 idx = params.weight.get_index(0, 0, idx);
@@ -86,61 +92,55 @@ conv2d_op_custom(const tensor_t&         in_data,
                 const float_t *pi = &in[idx];
 
                 idx = params.out.get_index(0, 0, o);
-                float_t *pa = &a[idx];		
-		
-		cnn_size_t i_temp = 0; 		
-		int loop_count;
-		int offset = (params.stride_offset==1)?(params.stride_offset):(int)(params.stride_offset/2);
-		//std::cout << "offset:" << offset << std::endl; 
-		
-		//t1 = std::chrono::high_resolution_clock::now();
-		
-		//for (loop_count=0; loop_count<10; loop_count++){
-		    // Loop over the dimensions of the output window.
-		    for (cnn_size_t y = 0; y < params.out.height_; y+=offset) {
-			for (cnn_size_t x = 0; x < params.out.width_; x+=offset) {
+                float_t *pa = &a[idx];
 
-			      const float_t * ppw = pw;
-			      const float_t * ppi = pi + params.in_padded.width_ *
-				  (y * params.h_stride) +
-				  x * params.w_stride;
-			      float_t sum = float_t(0);
-			    
-			      // should be optimized for small kernel(3x3,5x5)
-			      for (cnn_size_t wy = 0; wy < params.weight.height_; wy++) {    // NOLINT
-				  for (cnn_size_t wx = 0; wx < params.weight.width_; wx++) { // NOLINT
-				      idx = wy * params.in_padded.width_ + wx;
-				      sum += *ppw++ * ppi[idx];
-				  }
-			      }
-			      pa[y * params.out.width_ + x] += sum;
-			      //std::cout << "(" << x << "," << y <<");"; 
-			    
-			    //} // i_temp
-			    
-			    //else {
-			      //pa[y * params.out.width_ + x] = 0.0f;
-			      //std::cout << " Skipped for x:" << x << " y:" << y << std::endl; 			  
-			    //}
-			    //i_temp++;
-			}
-		    }
+                int offset = (params.stride_offset==1)?(params.stride_offset):(int)(params.stride_offset/2);
+                //std::cout << "offset:" << offset << std::endl;
 
-		    if (params.has_bias) {
-			float_t * pa = &a[params.out.get_index(0, 0, o)];
-			float_t * paa = pa + params.out.width_ * params.out.height_;
-			std::for_each(pa, paa, [&](float_t& f) { f += bias[o]; });
-		    }
-		//}//loop_count
-	    }
+                // Loop over the dimensions of the output window.
+                for (cnn_size_t y = 0; y < params.out.height_; y+=offset) {
+                    for (cnn_size_t x = 0; x < params.out.width_; x+=offset) {
+
+                    const float_t * ppw = pw;
+                    const float_t * ppi = pi + params.in_padded.width_ * (y * params.h_stride) + x * params.w_stride;
+                    float_t sum = float_t(0);
+
+                    // should be optimized for small kernel(3x3,5x5)
+                    for (cnn_size_t wy = 0; wy < params.weight.height_; wy++) {    // NOLINT
+                        for (cnn_size_t wx = 0; wx < params.weight.width_; wx++) { // NOLINT
+                            idx = wy * params.in_padded.width_ + wx;
+                            sum += *ppw++ * ppi[idx];
+                        }
+                    }
+                    pa[y * params.out.width_ + x] += sum;
+
+                    //else {
+                      //pa[y * params.out.width_ + x] = 0.0f;
+                      //std::cout << " Skipped for x:" << x << " y:" << y << std::endl;
+                    //}
+                    }
+                }
+
+                if (params.has_bias) {
+                    float_t * pa = &a[params.out.get_index(0, 0, o)];
+                    float_t * paa = pa + params.out.width_ * params.out.height_;
+                    std::for_each(pa, paa, [&](float_t& f) { f += bias[o]; });
+                }
+            }
         }
-        
-        //t2 = std::chrono::high_resolution_clock::now();
-        
-    });
-          
+    //});
+
+        std::cout<<"Output:";
+        for ( auto j = 0; j< a.size(); j++ ) {
+            std::cout << a[j] << ",";
+        }
+        std::cout<<std::endl;
+    }
+
+    t2 = std::chrono::high_resolution_clock::now();
+
     //auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
-    //std::cout << "Time in Conv Layer:" << timeElapsed << std::endl;
+    //std::cout << std::setw(30) << "Time in Conv Layer:" << timeElapsed << std::endl;
 }
 
 

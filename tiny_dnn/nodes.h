@@ -29,6 +29,7 @@
 #include <vector>
 #include <tuple>
 #include <unordered_map>
+#include <chrono>
 #include <cereal/types/utility.hpp>
 #include <cereal/types/tuple.hpp>
 
@@ -242,11 +243,23 @@ class nodes {
     // to output the activations of just the final (softmax) layer.     
     void output_last_layer_activations(){
 	
-	//Check to see which is the last layer. 
+	    //Check to see which is the last layer.
         size_t last_layer_number = nodes_.size();
 	
-	//set the param for just the last layer. 
-	nodes_[last_layer_number-1]->set_output_activations();
+	    //set the param for just the last layer.
+	    nodes_[last_layer_number-1]->set_output_activations();
+    }
+
+    // This function outputs the details about the various layers in a provided network.
+    void output_model_details(){
+        int i = 1;
+        for (auto& l : nodes_) {
+            std::cout<<"Layer "<<i++<<": ";
+            std::cout<<"Layer Type : "<<l->layer_type();
+            std::cout<<"Fan in :" << l->in_data_size();
+            std::cout<<"Fan out :" << l->out_data_size();
+            std::cout<<std::endl;
+        }
     }
 
  protected:
@@ -324,6 +337,9 @@ class sequential : public nodes {
 
         nodes_.front()->set_in_data({ reordered_data[0] });
 
+        // Check time to run here:
+        //std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+
         for (auto l : nodes_) {
             if (l->initialized()) {
                 l->forward();
@@ -333,6 +349,11 @@ class sequential : public nodes {
         }
 
         const std::vector<tensor_t> out = nodes_.back()->output();
+
+        /*std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+
+        auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
+        std::cout << timeElapsed << std::endl;*/
 
         return normalize_out(out);
     }

@@ -43,51 +43,57 @@ inline void tiny_maxpool_kernel(const tensor_t& in_data,
     
     //std::this_thread::sleep_for(std::chrono::milliseconds(100));
   
-    //std::chrono::high_resolution_clock::time_point t1,t2;
+    std::chrono::high_resolution_clock::time_point t1,t2;
+
+    t1 = std::chrono::high_resolution_clock::now();
   
-    for_i(layer_parallelize, in_data.size(), [&](int sample) {
+    //for_i(layer_parallelize, in_data.size(), [&](int sample) {
+    for (auto sample = 0; sample < in_data.size(); sample++) {
          
 		const vec_t& in = in_data[sample];
 			vec_t& a = out_data[sample];
 			std::vector<cnn_size_t>& max = max_idx[sample];
 
-		//std::cout << "out2in:" << out2in.size() << std::endl;
+		std::cout << "\n\nStarting Max Pool:\n Inputs:" << std::endl;
 
 		cnn_size_t inc = stride_adjust;
 
 		float_t max_float_value = std::numeric_limits<float_t>::lowest();
 
-		int loop_count;
+        for (cnn_size_t i = 0; i < out2in.size(); i+=inc) {
 
-		//t1 = std::chrono::high_resolution_clock::now();
+            const auto& in_index = out2in[i];
+            float_t max_value = max_float_value;
 
-		//for (loop_count=0; loop_count<10; loop_count++){
-		  for (cnn_size_t i = 0; i < out2in.size(); i+=inc) {
+            //std::cout << i << ",";
+            // in_index is always pooling_size^2 in size.
 
-			  const auto& in_index = out2in[i];
-			  float_t max_value = max_float_value;
+            for (auto j : in_index) {
+                std::cout << in[j] << ";";
+            }
 
-			  //std::cout << i << ",";
-			  // in_index is always pooling_size^2 in size.
+            std::cout << ",";
 
-			  for (auto j : in_index) {
-			  if (in[j] > max_value) {
-				  max_value = in[j];
-				  max[i] = j;
-			  }
-			  }
-			  a[i] = max_value;
+            for (auto j : in_index) {
+              if (in[j] > max_value) {
+                  max_value = in[j];
+                  max[i] = j;
+              }
+            }
+            a[i] = max_value;
 
-		  }
-		  //std::cout << std::endl;
-		//}
-        
-        //t2 = std::chrono::high_resolution_clock::now();
-	
-    });    
-    
+        }
+        std::cout << std::endl;
+
+        //Add another loop here to loop over a[i]:0->out2in.size()
+
+    //});
+    }
+
+    t2 = std::chrono::high_resolution_clock::now();
+
     //auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
-    //std::cout << "Time in Max pool Layer : " << timeElapsed << std::endl;
+    //std::cout << std::setw(30) << "Time in Max pool Layer : " << timeElapsed << std::endl;
 }
 
 inline void tiny_maxpool_back_kernel(tensor_t& prev_delta,

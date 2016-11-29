@@ -227,7 +227,8 @@ class convolutional_layer : public feedforward_layer<Activation> {
      * @param out_data     output vectors
      **/
     void forward_propagation(const std::vector<tensor_t*>& in_data,
-                             std::vector<tensor_t*>&       out_data) override { 
+                             std::vector<tensor_t*>&       out_data) override {
+
         copy_and_pad_input(*in_data[0], cws_.prev_out_padded_);
 
         std::vector<tensor_t*> in_data_;
@@ -525,10 +526,10 @@ private:
         }
 
     }
-    
-    void set_anytime_param(int anytime_param) {        
-	params_.stride_offset = anytime_param;
-	//std::cout << "Anytime param got set for convolutional_layer" << std::endl; 
+
+    void on_set_anytime_param() override {
+        params_.stride_offset = this->anytime_param_;
+        //std::cout << "anytime param is being set for FC layer to: "<< params_.stride_offset_<< std::endl;
     }
 
  private:
