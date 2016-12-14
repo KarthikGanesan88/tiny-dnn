@@ -47,7 +47,6 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include "tiny_dnn/custom_pragmas.h"
 
 namespace tiny_dnn {
 namespace kernels {
@@ -69,6 +68,8 @@ conv2d_op_custom(const tensor_t&         in_data,
     std::cout<<"Starting Conv Layer\n";
 #endif
 
+    std::cout<<"Starting Conv Layer\n";
+
     //for_i(parallelize, in_data.size(), [&](int sample) {
     for (auto sample = 0; sample < in_data.size(); sample++) {
         const vec_t& in = in_data[sample];
@@ -83,11 +84,12 @@ conv2d_op_custom(const tensor_t&         in_data,
 #endif
 
         // o : No of output channels ; inc : number of dimensions (1 or 3)
+        // o corresponds to
         for (cnn_size_t o = 0; o < params.out.depth_; o++) {
             for (cnn_size_t inc = 0; inc < params.in.depth_; inc++) {
                 if (!params.tbl.is_connected(o, inc)) continue;
 
-                //std::cout << "o:" << o << " inc:" << inc << std::endl;
+                std::cout << "Output Channel #:" << o << " Input Channel #:" << inc << std::endl;
 
                 cnn_size_t idx = 0;
                 idx = params.in.depth_ * o + inc;
@@ -111,6 +113,8 @@ conv2d_op_custom(const tensor_t&         in_data,
                     const float_t * ppi = pi + params.in_padded.width_ * (y * params.h_stride) + x * params.w_stride;
                     float_t sum = float_t(0);
 
+                    std::cout << *ppi << ",";
+
                     // should be optimized for small kernel(3x3,5x5)
                     for (cnn_size_t wy = 0; wy < params.weight.height_; wy++) {    // NOLINT
                         for (cnn_size_t wx = 0; wx < params.weight.width_; wx++) { // NOLINT
@@ -125,6 +129,7 @@ conv2d_op_custom(const tensor_t&         in_data,
                       //std::cout << " Skipped for x:" << x << " y:" << y << std::endl;
                     //}
                     }
+                    std::cout << std::endl;
                 }
 
                 if (params.has_bias) {

@@ -69,23 +69,28 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     parse_mnist_labels(data_dir_path+"/t10k-labels.idx1-ubyte", &test_labels);
     parse_mnist_images(data_dir_path+"/t10k-images.idx3-ubyte", &test_images, -1.0, 1.0, 2, 2);
 
-    std::cout << "Start testing" << std::endl;
-
-    std::cout << "full model" << std::endl;
-
+    //Dry runs to fix the stupid activation function timing.
     nn.testN(test_images, test_labels, (cnn_size_t)1);
-    //nn.test(test_images, test_labels).print_summary(std::cout);
 
-    /*std::vector<int> ap;
-    ap.push_back(1); ap.push_back(1);
-
-    std::cout << "partial model" << std::endl;
-
-    ap[0]=1; ap[1]=1;
-    nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
+    std::cout << "*******************************\n" \
+                 "          Full model           \n" \
+                 "*******************************\n";
 
     nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
     //nn.test(test_images, test_labels).print_summary(std::cout);
+
+    std::cout << "*******************************\n" \
+                 "          Partial model        \n" \
+                 "*******************************\n";
+
+    std::vector<int> ap;
+    ap.push_back(1); ap.push_back(1);
+
+    ap[0]=4; ap[1]=1;
+    nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
+
+    nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
+    /*nn.test(test_images, test_labels).print_summary(std::cout);
 
     ap[0]=2; ap[1]=1;
     nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;

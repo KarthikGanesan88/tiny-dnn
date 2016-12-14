@@ -46,14 +46,16 @@ public:
 public:
     void forward_activation(tensor_t& a_tensor, tensor_t& out_tensor) {
 
-        std::chrono::high_resolution_clock::time_point t1, t2;
-
         cnn_size_t out_dim = out_shape()[0].size();
 
-        //int nodes_calculated=0;
+#ifdef PRINT_DEBUG
         std::cout<<"\n\nActivation function"<<std::endl;
+#endif
 
+#ifdef TIMING
+        std::chrono::high_resolution_clock::time_point t1, t2;
         t1 = std::chrono::high_resolution_clock::now();
+#endif
 
         //for_i(a_tensor.size(), [&](int sample) {
         for (auto sample = 0; sample < a_tensor.size(); sample++) {
@@ -63,30 +65,36 @@ public:
             out.resize(out_dim);
             a.resize(out_dim);
 
+#ifdef PRINT_DEBUG
             std::cout<<"Input :\n";
             for (cnn_size_t i = 0; i < out_dim; i++) {
                 std::cout<< a[i] <<",";
             }
+            std::cout<< "\nOutput :\n";
+#endif
             /*std::cout<<std::endl<<"vec_t out (initial) :";
 
             for (cnn_size_t i = 0; i < out_dim; i++) {
                 std::cout<< out[i] <<",";
             }*/
 
-            std::cout<< "\nOutput :\n";
-
             for (cnn_size_t i = 0; i < out_dim; i+=anytime_param_) {
                 out[i] = this->h_.f(a, i);
+#ifdef PRINT_DEBUG
                 std::cout<<out[i]<<",";
+#endif
             }
+#ifdef PRINT_DEBUG
             std::cout<<std::endl;
+#endif
         }
         //});
 
+#ifdef TIMING
         t2 = std::chrono::high_resolution_clock::now();
-
-        //auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
-        //std::cout << std::setw(30) << "Time in activation function : " << timeElapsed << std::endl;
+        auto timeElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
+        std::cout << std::setw(30) << "Time in activation function : " << timeElapsed << std::endl;
+#endif
     }
 
     void backward_activation(const tensor_t& prev_delta, const tensor_t& this_out, tensor_t& curr_delta) {

@@ -704,15 +704,8 @@ public:
 
     // Function to be called from main to set anytime params.
     // consists of a vector of ints corresponding to each layer.
-    void set_anytime_params(std::vector<int> anytime_params){        	
-	
-	/*std::cout << "Anytime params (from network.h):";
-	for (auto i = anytime_params.begin(); i!=anytime_params.end(); ++i){
-	  std::cout << *i <<","; 	  
-	}
-	std::cout << std::endl; */
-	
-	net_.set_anytime_params(anytime_params);
+    void set_anytime_params(std::vector<int> anytime_params){
+    	net_.set_anytime_params(anytime_params);
     }
     
     // Function to output the activations of the last (softmax) layer

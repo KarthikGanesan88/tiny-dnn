@@ -39,15 +39,15 @@ static void construct_net(network<sequential>& nn) {
             padding::valid, true, 1, 1, backend_type)
     
        << max_pooling_layer<identity>(28, 28, 6, 2)   	// S2, 6@28x28-in, 6@14x14-out
-    
+
        << convolutional_layer<relu>(14, 14, 5, 6, 16, 	// C3, 6@14x14-in, 16@10x10-in
             padding::valid, true, 1, 1, backend_type)
-       
+
        << max_pooling_layer<identity>(10, 10, 16, 2)  	// S4, 16@10x10-in, 16@5x5-out
-       
+
        << convolutional_layer<relu>(5, 5, 5, 16, 120, 	// C5, 16@5x5-in, 120@1x1-out
             padding::valid, true, 1, 1, backend_type)
-       
+
        << fully_connected_layer<relu>(120, 84,        	// F6, 120-in, 84-out
             true, backend_type)    
        

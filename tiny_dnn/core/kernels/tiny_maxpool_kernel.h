@@ -28,7 +28,6 @@
 
 #include <chrono>
 #include <thread>
-#include "tiny_dnn/custom_pragmas.h"
 
 namespace tiny_dnn {
 namespace core {

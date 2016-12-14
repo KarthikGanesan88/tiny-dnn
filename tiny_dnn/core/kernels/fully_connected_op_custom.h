@@ -30,7 +30,6 @@
 #include <chrono>
 #include <thread>
 #include "tiny_dnn/core/params/fully_params.h"
-#include "tiny_dnn/custom_pragmas.h"
 
 namespace tiny_dnn {
 namespace kernels {

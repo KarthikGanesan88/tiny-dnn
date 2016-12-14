@@ -31,6 +31,7 @@
 using namespace tiny_dnn;
 using namespace tiny_dnn::activation;
 
+
 void run_test(network<sequential>& nn, std::vector<label_t>& test_labels, std::vector<vec_t>& test_images, const std::vector<int> ap) 
 {
     //std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
@@ -70,10 +71,10 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     /* construct nets
     nn << convolutional_layer<tan_h>(32, 32, 5, 1, 6,  	// C1, 1@32x32-in, 6@28x28-out
             padding::valid, true, 1, 1, backend_type)    
-       << max_pooling_layer<tan_h>(28, 28, 6, 2)   	// S2, 6@28x28-in, 6@14x14-out    
+       << max_pooling_layer<tan_h>(28, 28, 6, 2)   	    // S2, 6@28x28-in, 6@14x14-out
        << convolutional_layer<tan_h>(14, 14, 5, 6, 16, 	// C3, 6@14x14-in, 16@10x10-in
             padding::valid, true, 1, 1, backend_type)       
-       << max_pooling_layer<tan_h>(10, 10, 16, 2)  	// S4, 16@10x10-in, 16@5x5-out       
+       << max_pooling_layer<tan_h>(10, 10, 16, 2)  	    // S4, 16@10x10-in, 16@5x5-out
        << convolutional_layer<tan_h>(5, 5, 5, 16, 120, 	// C5, 16@5x5-in, 120@1x1-out
             padding::valid, true, 1, 1, backend_type)       
        << fully_connected_layer<tan_h>(120, 84,        	// F6, 120-in, 84-out
@@ -85,7 +86,7 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     // Initial run to warm the cache?
     nn.testN(test_images, test_labels, (cnn_size_t)1);
 
-    // Anytime params must be initialised to 1 to perform the 'full calculations'
+    /* Anytime params must be initialised to 1 to perform the 'full calculations'
     std::vector<int> ap;
     ap.push_back(1); // [0] - C1 Layer
     ap.push_back(1); // [1] - S2 Layer
@@ -97,11 +98,13 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
         
     std::cout << "-------------------------Full run-------------------------" << std::endl;
     nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
+    //nn.test(test_images, test_labels).print_summary(std::cout);
     
     std::cout << "-------------------------Partial run-------------------------" << std::endl;
     ap[0]=4;ap[1]=4;ap[2]=4;ap[3]=4;ap[4]=4;ap[5]=4;ap[6]=1;
     nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
     nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
+    //nn.test(test_images, test_labels).print_summary(std::cout);
     
     /*ap[0]=8;ap[1]=8;ap[2]=8;ap[3]=8;ap[4]=8;ap[5]=8; run_test(nn,test_labels, test_images,ap);
     ap[0]=4;ap[1]=4;ap[2]=8;ap[3]=8;ap[4]=8;ap[5]=8; run_test(nn,test_labels, test_images,ap);        
