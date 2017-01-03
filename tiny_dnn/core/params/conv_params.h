@@ -105,6 +105,7 @@ class conv_params : public Params {
     padding pad_type;
     size_t w_stride;
     size_t h_stride;
+    cnn_size_t channel_sampling;
     cnn_size_t stride_offset;
 
     friend std::ostream& operator<<(std::ostream &o,

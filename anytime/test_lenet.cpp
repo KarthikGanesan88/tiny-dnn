@@ -28,6 +28,8 @@
 #include <chrono>
 #include "tiny_dnn/tiny_dnn.h"
 
+#define NN_SIZE 7
+
 using namespace tiny_dnn;
 using namespace tiny_dnn::activation;
 
@@ -86,23 +88,21 @@ static void test_lenet(const std::string& dictionary, const std::string& data_di
     // Initial run to warm the cache?
     nn.testN(test_images, test_labels, (cnn_size_t)1);
 
+    anytime_params ap[NN_SIZE] = {0};
+
     /* Anytime params must be initialised to 1 to perform the 'full calculations'
-    std::vector<int> ap;
-    ap.push_back(1); // [0] - C1 Layer
-    ap.push_back(1); // [1] - S2 Layer
-    ap.push_back(1); // [2] - C3 Layer
-    ap.push_back(1); // [3] - S4 Layer
-    ap.push_back(1); // [4] - C5 Layer
-    ap.push_back(1); // [5] - F6 Layer
-    ap.push_back(1); // [6] - F7 Layer
+    for (int i=0; i<NN_SIZE; i++){ ap[0].cs=1; ap[0].ls=1; }
         
     std::cout << "-------------------------Full run-------------------------" << std::endl;
     nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
     //nn.test(test_images, test_labels).print_summary(std::cout);
     
     std::cout << "-------------------------Partial run-------------------------" << std::endl;
-    ap[0]=4;ap[1]=4;ap[2]=4;ap[3]=4;ap[4]=4;ap[5]=4;ap[6]=1;
-    nn.set_anytime_params(ap); for (auto iter: ap) { std::cout<< iter << ","; }	std::cout<< ":"<<std::endl;
+    ap[0].cs=1; ap[0].ls=1; for (int i=1; i<(NN_SIZE-1); i++){ ap[0].cs=4; ap[0].ls=4; }
+    nn.set_anytime_params(ap);
+
+    //for (int i=0; i<NN_SIZE; i++){ std::cout<< ap[i].ls << ","ap[0].cs=1; ap[0].ls=1; } std::cout<< ":"<<std::endl;
+
     nn.testN(test_images, test_labels, (cnn_size_t)1).print_summary(std::cout);
     //nn.test(test_images, test_labels).print_summary(std::cout);
     

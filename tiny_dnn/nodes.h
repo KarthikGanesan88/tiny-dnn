@@ -216,29 +216,30 @@ class nodes {
         }
     }
 
+    /********************************************************************************
+     *                   Custom functions to support Anytime
+     ********************************************************************************/
+
     // Function to set anytime params per layer
-    // iterate over layers and call the function in layer.h to set the param
+    // iterate over layers and call the function in each layer to set the param
+    // includes a blank virtual call in layer.h (which shouldnt ever be used!)
+    // this is overridden in feedforward_layer.h ( which is the only type supported for anytime ).
     void set_anytime_params(std::vector<int> anytime_params){
 
-        // Check to see if the size of the vector matches the number of layers in the network
+        /* Check to see if the size of the vector matches the number of layers in the network
         if (nodes_.size() != anytime_params.size()){
             throw nn_error("Mismatch in anytime parameters. Size does not match number of layers in network\n");
-        }
+        }*/
 
-        //std::cout << "Anytime param (from nodes.h):"; 
-        
         int i = 0;
         for (auto& l : nodes_) {            
-	    //std::cout << anytime_params[i]<< ","; 
-	    l->set_anytime_param(anytime_params[i]);
-	    i++;
+	        //std::cout << anytime_params[i]<< ",";
+	        l->set_anytime_param(anytime_params[i]);
+	        i++;
         }
         //std::cout << std::endl; 
     }
-    
-    // size_t size() const { return nodes_.size(); }    
-    // layer* operator[] (size_t index) { return nodes_[index]; }
-    
+
     // Once the NN is loaded, this function is called to set the output_activations_ param
     // to output the activations of just the final (softmax) layer.     
     void output_last_layer_activations(){

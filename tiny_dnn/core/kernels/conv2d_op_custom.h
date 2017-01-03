@@ -68,7 +68,7 @@ conv2d_op_custom(const tensor_t&         in_data,
     std::cout<<"Starting Conv Layer\n";
 #endif
 
-    std::cout<<"Starting Conv Layer\n";
+    //std::cout<<"Starting Conv Layer\n";
 
     //for_i(parallelize, in_data.size(), [&](int sample) {
     for (auto sample = 0; sample < in_data.size(); sample++) {
@@ -84,12 +84,13 @@ conv2d_op_custom(const tensor_t&         in_data,
 #endif
 
         // o : No of output channels ; inc : number of dimensions (1 or 3)
-        // o corresponds to
+        // o corresponds to number of feature maps in this layer.
+        // inc corresponds to number of feature maps in the previous layer
         for (cnn_size_t o = 0; o < params.out.depth_; o++) {
             for (cnn_size_t inc = 0; inc < params.in.depth_; inc++) {
                 if (!params.tbl.is_connected(o, inc)) continue;
 
-                std::cout << "Output Channel #:" << o << " Input Channel #:" << inc << std::endl;
+                //std::cout << "Output Channel #:" << o << " Input Channel #:" << inc << std::endl;
 
                 cnn_size_t idx = 0;
                 idx = params.in.depth_ * o + inc;
@@ -113,7 +114,7 @@ conv2d_op_custom(const tensor_t&         in_data,
                     const float_t * ppi = pi + params.in_padded.width_ * (y * params.h_stride) + x * params.w_stride;
                     float_t sum = float_t(0);
 
-                    std::cout << *ppi << ",";
+                    //std::cout << *ppi << ",";
 
                     // should be optimized for small kernel(3x3,5x5)
                     for (cnn_size_t wy = 0; wy < params.weight.height_; wy++) {    // NOLINT
@@ -129,12 +130,13 @@ conv2d_op_custom(const tensor_t&         in_data,
                       //std::cout << " Skipped for x:" << x << " y:" << y << std::endl;
                     //}
                     }
-                    std::cout << std::endl;
+                    //std::cout << std::endl;
                 }
 
                 if (params.has_bias) {
                     float_t * pa = &a[params.out.get_index(0, 0, o)];
                     float_t * paa = pa + params.out.width_ * params.out.height_;
+                    // Probably best to 'unroll' this as well and not use lambda to match timing.
                     std::for_each(pa, paa, [&](float_t& f) { f += bias[o]; });
                 }
             }

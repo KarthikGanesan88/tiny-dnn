@@ -71,6 +71,11 @@ typedef std::vector<float_t, aligned_allocator<float_t, 64>> vec_t;
 
 typedef std::vector<vec_t> tensor_t;
 
+typedef struct anytime_params_type  {
+        int cs;           // Holds the parameter to skip the feature maps
+        int ls;           // Holds the parameter to skip nodes within a layer
+} anytime_params;
+
 enum class net_phase {
     train,
     test

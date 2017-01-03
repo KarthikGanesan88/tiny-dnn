@@ -121,6 +121,12 @@ public:
         });
     }
 
+    /********************************************************************************
+    *                   Custom functions to support Anytime
+    ********************************************************************************/
+
+    // Hack-y function to force the derived classes to update their anytime params once
+    // it is set here in the base class.
     virtual void on_set_anytime_param() {}
 
     void set_anytime_param(int anytime_param) override{

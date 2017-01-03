@@ -311,13 +311,17 @@ class layer : public node {
         return out_shape()[0].width_;
     }
 
+    /********************************************************************************
+     *                   Custom functions to support Anytime
+     ********************************************************************************/
+
     virtual void set_anytime_param(int anytime_param) {
         std::cout << "ERROR: THIS WASNT OVERRIDEN! " <<  anytime_param << std::endl;
     }
-    
-    virtual void set_output_activations(){
-		
-    }
+
+    // This function is only needed for a FC layer ( since only that can ever be the last layer!)
+    // So this is only overridden in the fully_connected_layer.h file.
+    virtual void set_output_activations(){ }
     
     /////////////////////////////////////////////////////////////////////////
     // setter

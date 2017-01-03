@@ -75,15 +75,6 @@ public:
     size_t fan_out_size() const override {
         return params_.out_size_;
     }
-   
-    void on_set_anytime_param() override {
-        params_.skip_nodes_ = this->anytime_param_;
-        //std::cout << "anytime param is being set for FC layer to: "<< params_.skip_nodes_<< std::endl;
-    }
-    
-    void set_output_activations() {        
-	    params_.output_activations_ = true;
-    }
 
     std::vector<index3d<cnn_size_t>> in_shape() const override {
         if (params_.has_bias_) {
@@ -153,6 +144,19 @@ public:
         ar(cereal::make_nvp("in_size", params_.in_size_),
            cereal::make_nvp("out_size", params_.out_size_),
            cereal::make_nvp("has_bias", params_.has_bias_));
+    }
+
+    /********************************************************************************
+    *                   Custom functions to support Anytime
+    ********************************************************************************/
+
+    void on_set_anytime_param() override {
+        params_.skip_nodes_ = this->anytime_param_;
+        //std::cout << "anytime param is being set for FC layer to: "<< params_.skip_nodes_<< std::endl;
+    }
+
+    void set_output_activations() {
+        params_.output_activations_ = true;
     }
 
 protected:
